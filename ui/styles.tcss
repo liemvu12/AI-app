@@ -1,0 +1,202 @@
+/* Minimalist Terminal Theme - AGY Terminal Bridge (Unified Terminal Stream) */
+
+Screen {
+    background: #0c0e14;
+    color: #d1d5db;
+    layout: vertical;
+}
+
+#main-container {
+    height: 1fr;
+    layout: horizontal;
+    background: #0c0e14;
+}
+
+/* CỘT TRÁI: LUỒNG TERMINAL ĐỒNG NHẤT (KHÔNG CHIA TÁCH Ô NHẬP & PHẢN HỒI) */
+#terminal-view {
+    width: 68%;
+    height: 100%;
+    border-right: solid #262936;
+    background: #0c0e14;
+    padding: 0 1;
+    scrollbar-gutter: stable;
+    overflow-y: scroll;
+}
+
+#terminal-banner {
+    color: #6b7280;
+    margin-bottom: 1;
+}
+
+.term-cmd {
+    margin-top: 1;
+    color: #10b981;
+}
+
+.term-response {
+    margin-top: 0;
+    margin-bottom: 1;
+    color: #e5e7eb;
+}
+
+.term-system {
+    color: #eab308;
+    margin-bottom: 1;
+}
+
+/* Dòng nhập lệnh nối tiếp trực tiếp ở cuối luồng terminal */
+#active-input-row {
+    height: 1;
+    layout: horizontal;
+    margin-top: 1;
+    margin-bottom: 1;
+}
+
+#prompt-prefix {
+    width: 5;
+    color: #10b981;
+    text-style: bold;
+}
+
+#prompt-input {
+    width: 1fr;
+    height: 1;
+    border: none;
+    background: transparent;
+    color: #f3f4f6;
+    padding: 0;
+}
+
+#prompt-input:focus {
+    border: none;
+}
+
+/* CỘT PHẢI: 2 CỬA SỔ TỐI GIẢN HỖ TRỢ TIẾNG ANH (CHỈ CÓ VÁCH NGĂN MỎNG) */
+#sidebar-column {
+    width: 32%;
+    height: 100%;
+    layout: vertical;
+    background: #0c0e14;
+}
+
+/* Cửa sổ 1: English Dev Learning & Polish */
+#english-panel {
+    height: 55%;
+    border-bottom: solid #262936;
+    layout: vertical;
+    padding: 1;
+    background: #0c0e14;
+}
+
+#header-bar {
+    height: 1;
+    layout: horizontal;
+    margin-bottom: 1;
+}
+
+#english-title {
+    width: 1fr;
+    height: 1;
+    color: #8b949e;
+    text-style: bold;
+}
+
+#btn-settings {
+    width: auto;
+    min-width: 17;
+    height: 1;
+    min-height: 1;
+    background: #21262d;
+    color: #58a6ff;
+    border: none;
+    padding: 0 1;
+    text-style: bold;
+    text-align: center;
+    content-align: center middle;
+}
+
+#btn-settings:hover {
+    background: #30363d;
+    color: #79c0ff;
+}
+
+#btn-settings:focus {
+    background: #388bfd;
+    color: #ffffff;
+    text-style: bold;
+}
+
+#shortcuts-dropdown {
+    display: none;
+    height: auto;
+    max-height: 11;
+    background: #161b22;
+    border: solid #30363d;
+    padding: 1;
+    margin-bottom: 1;
+    overflow-y: auto;
+}
+
+#shortcuts-dropdown.open {
+    display: block;
+}
+
+#english-content {
+    height: 1fr;
+    background: #0c0e14;
+    border: none;
+    overflow-y: auto;
+    color: #9ca3af;
+}
+
+#english-footer {
+    height: 1;
+    color: #4b5563;
+    content-align: right middle;
+}
+
+/* Cửa sổ 2: Quick Translate [Ctrl+T] */
+#quick-translate-panel {
+    height: 45%;
+    layout: vertical;
+    padding: 1;
+    background: #0c0e14;
+}
+
+#quick-translate-title {
+    height: 1;
+    color: #9ca3af;
+    text-style: bold;
+    border-bottom: solid #1f2330;
+    margin-bottom: 1;
+}
+
+#dict-input {
+    height: 3;
+    border: solid #262936;
+    background: #0c0e14;
+    margin-bottom: 1;
+    color: #f3f4f6;
+}
+
+#dict-input:focus {
+    border: solid #3b82f6;
+}
+
+#dict-result {
+    height: 1fr;
+    background: #0c0e14;
+    border: none;
+    overflow-y: auto;
+    color: #10b981;
+}
+
+/* Thanh trạng thái tối giản 1 dòng */
+#status-bar {
+    dock: bottom;
+    height: 1;
+    background: #141721;
+    color: #6b7280;
+    padding: 0 1;
+    border-top: solid #262936;
+}

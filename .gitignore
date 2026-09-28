@@ -1,0 +1,46 @@
+# AGY Companion — .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+*.spec
+
+# PyInstaller build output (large binary — distributed via Releases)
+agy_terminal_bridge/dist/
+agy_terminal_bridge/build/
+
+# Bundle zip (distributed via Releases)
+bundle.zip
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Logs & temp
+*.log
+*.tmp
+*.bak
+_MEI*/
+
+# Local config / secrets
+.env
+*.key
+*.pem
+*.p12
+
+# Node.js (other subprojects)
+node_modules/
