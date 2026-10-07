@@ -10,6 +10,7 @@ Repository tổng hợp các ứng dụng, công cụ và tiện ích AI đượ
 |---|---|---|---|
 | [`AGY-Companion/`](./AGY-Companion) | **AGY Companion** | Trợ lý tiếng Anh & AI tích hợp TUI đồng hành cùng Antigravity CLI | Python 3.12, Textual (TUI), Ollama AI, Grammar Engine |
 | [`Shopee-Price-Checker/`](./Shopee-Price-Checker) | **Shopee Price Checker** | Tra cứu & đối soát giá sản phẩm Shopee, bóc tách biến thể, lọc shop uy tín, chống giá mồi & phát hiện rủi ro qua review | Python 3.10+, Playwright, Curl-CFFI, CLI |
+| [`Ghost-Window/`](./Ghost-Window) | **Ghost Window** | Bộ công cụ duyệt web & làm việc tàng hình: Chrome Extension (Manifest V3) làm mờ/ngụy trang web + Windows Desktop App (C# Win32) làm trong suốt mọi cửa sổ | JavaScript (Manifest V3), CSS3, C# WinForms, Win32 API |
 
 ---
 
@@ -39,6 +40,15 @@ AI-app/
 │   ├── requirements.txt
 │   └── test_verifier.py
 │
+├── Ghost-Window/               # [App 3] Ghost Window & Ghost Mode (Stealth Suite)
+│   ├── README.md               # Hướng dẫn chi tiết cho Ghost Window
+│   ├── manifest.json           # Cấu hình Chrome Extension (Manifest V3)
+│   ├── background/             # Service worker nền
+│   ├── content/                # Scripts can thiệp DOM, hiệu ứng mờ, Panic screen
+│   ├── popup/                  # Giao diện điều khiển extension
+│   ├── GhostWindow.exe         # Desktop Tool native cho Windows (16KB)
+│   └── TransparencyTool.cs     # Mã nguồn C# Win32 API
+│
 └── [App-Moi]/                  # Các ứng dụng tiếp theo sẽ được thêm vào đây
 ```
 
@@ -49,4 +59,5 @@ AI-app/
 - Xem chi tiết hướng dẫn cài đặt và sử dụng của từng app tại file `README.md` nằm bên trong thư mục của app đó:
   - [AGY Companion Guide](./AGY-Companion/README.md)
   - [Shopee Price Checker Guide](./Shopee-Price-Checker/README.md)
+  - [Ghost Window Guide](./Ghost-Window/README.md)
 - Đóng góp hoặc thêm ứng dụng mới: Vui lòng tạo thư mục con mới theo cấu trúc độc lập trên.

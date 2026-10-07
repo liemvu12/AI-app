@@ -1,0 +1,230 @@
+/* Ghost Mode Extension - Content Styles */
+
+:root {
+  --ghost-opacity: 0.35;
+  --ghost-brightness: 0.85;
+  --ghost-contrast: 0.80;
+  --ghost-blur: 0px;
+  --ghost-font-scale: 1;
+  --ghost-spotlight-x: 50%;
+  --ghost-spotlight-y: 50%;
+  --ghost-spotlight-radius: 180px;
+}
+
+/* Base Ghost Mode Activation */
+html.ghost-mode-enabled body {
+  opacity: var(--ghost-opacity) !important;
+  filter: brightness(var(--ghost-brightness)) contrast(var(--ghost-contrast)) blur(var(--ghost-blur)) !important;
+  transition: opacity 0.25s ease, filter 0.25s ease !important;
+}
+
+/* Grayscale Mode */
+html.ghost-grayscale body {
+  filter: grayscale(100%) brightness(var(--ghost-brightness)) contrast(var(--ghost-contrast)) blur(var(--ghost-blur)) !important;
+}
+
+/* Idle Fade Mode (when user inactive for X seconds) */
+html.ghost-idle-active body {
+  opacity: calc(var(--ghost-opacity) * 0.2) !important;
+  filter: blur(calc(var(--ghost-blur) + 6px)) grayscale(85%) brightness(calc(var(--ghost-brightness) * 0.75)) !important;
+  transition: opacity 0.6s ease, filter 0.6s ease !important;
+}
+
+/* Media Blurring & Camouflage (Images, Videos, Iframes, Canvas) */
+html.ghost-blur-media img,
+html.ghost-blur-media video,
+html.ghost-blur-media iframe,
+html.ghost-blur-media canvas,
+html.ghost-blur-media svg:not(.ghost-ui-element),
+html.ghost-blur-media [style*="background-image"] {
+  filter: blur(24px) opacity(0.18) grayscale(95%) !important;
+  transition: filter 0.3s ease, opacity 0.3s ease !important;
+}
+
+/* Hover to Reveal Media smoothly */
+html.ghost-blur-media img:hover,
+html.ghost-blur-media video:hover,
+html.ghost-blur-media iframe:hover,
+html.ghost-blur-media canvas:hover,
+html.ghost-blur-media svg:not(.ghost-ui-element):hover,
+html.ghost-blur-media [style*="background-image"]:hover {
+  filter: blur(0px) opacity(1) grayscale(0%) !important;
+}
+
+/* Stealth Font styling */
+html.ghost-stealth-font body * {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-weight: 350 !important;
+  letter-spacing: -0.01em !important;
+  text-shadow: none !important;
+}
+
+/* Spotlight Mode (Circular clear view following mouse cursor) */
+html.ghost-spotlight-active body {
+  mask-image: radial-gradient(
+    circle var(--ghost-spotlight-radius) at var(--ghost-spotlight-x) var(--ghost-spotlight-y),
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.9) 50%,
+    rgba(0, 0, 0, 0.15) 100%
+  ) !important;
+  -webkit-mask-image: radial-gradient(
+    circle var(--ghost-spotlight-radius) at var(--ghost-spotlight-x) var(--ghost-spotlight-y),
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.9) 50%,
+    rgba(0, 0, 0, 0.15) 100%
+  ) !important;
+}
+
+/* On-Screen HUD Notification Pill */
+#ghost-mode-hud {
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  z-index: 2147483647 !important;
+  background: rgba(15, 23, 42, 0.92) !important;
+  color: #f8fafc !important;
+  padding: 10px 18px !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  transform: translateY(12px) scale(0.95) !important;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+#ghost-mode-hud.ghost-hud-visible {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+#ghost-mode-hud .ghost-hud-icon {
+  display: inline-block !important;
+  font-size: 15px !important;
+}
+
+/* Boss Key / Panic Screen Overlay */
+#ghost-panic-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 2147483646 !important;
+  display: none;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+  user-select: none !important;
+  overflow: auto !important;
+}
+
+#ghost-panic-overlay.ghost-panic-active {
+  display: block !important;
+}
+
+/* Panic Screen Variant 1: Blank White */
+#ghost-panic-overlay.ghost-screen-white {
+  background: #ffffff !important;
+}
+
+/* Panic Screen Variant 2: Blank Black / Standby */
+#ghost-panic-overlay.ghost-screen-black {
+  background: #000000 !important;
+}
+
+/* Panic Screen Variant 3: Fake Google Docs / Word Document */
+#ghost-panic-overlay.ghost-screen-docs {
+  background: #f8f9fa !important;
+  color: #202124 !important;
+  padding: 40px 15% !important;
+  box-sizing: border-box !important;
+}
+
+.ghost-fake-doc-header {
+  border-bottom: 1px solid #dadce0 !important;
+  padding-bottom: 12px !important;
+  margin-bottom: 24px !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  color: #1a73e8 !important;
+}
+
+.ghost-fake-doc-body {
+  background: #ffffff !important;
+  padding: 48px 56px !important;
+  box-shadow: 0 1px 3px rgba(60,64,67,.3) !important;
+  border-radius: 4px !important;
+  line-height: 1.6 !important;
+  font-size: 14px !important;
+  color: #3c4043 !important;
+}
+
+.ghost-fake-doc-body h1 {
+  font-size: 22px !important;
+  color: #202124 !important;
+  margin-bottom: 16px !important;
+}
+
+.ghost-fake-doc-body p {
+  margin-bottom: 12px !important;
+}
+
+/* Panic Screen Variant 4: Fake Code / VS Code */
+#ghost-panic-overlay.ghost-screen-code {
+  background: #1e1e1e !important;
+  color: #d4d4d4 !important;
+  font-family: 'Consolas', 'Courier New', monospace !important;
+  padding: 24px !important;
+  box-sizing: border-box !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+
+.ghost-fake-code-tab {
+  background: #2d2d2d !important;
+  color: #969696 !important;
+  display: inline-block !important;
+  padding: 6px 14px !important;
+  margin-bottom: 16px !important;
+  border-top: 2px solid #007acc !important;
+  font-size: 12px !important;
+}
+
+/* Panic Screen Variant 5: Fake Excel Sheet */
+#ghost-panic-overlay.ghost-screen-excel {
+  background: #ffffff !important;
+  color: #000000 !important;
+  font-size: 12px !important;
+  padding: 0 !important;
+}
+
+.ghost-excel-toolbar {
+  background: #107c41 !important;
+  color: white !important;
+  padding: 8px 16px !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+}
+
+.ghost-excel-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  background: #fff !important;
+}
+
+.ghost-excel-table th, .ghost-excel-table td {
+  border: 1px solid #d4d4d4 !important;
+  padding: 4px 8px !important;
+  text-align: left !important;
+  font-size: 12px !important;
+}
+
+.ghost-excel-table th {
+  background: #f3f2f1 !important;
+  font-weight: 600 !important;
+}

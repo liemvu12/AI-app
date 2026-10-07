@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ghost Mode - Tàng Hình & Trong Suốt</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo-badge">👻</div>
+        <div>
+          <h1>Ghost Mode</h1>
+          <p class="subtitle">Lướt web tàng hình & riêng tư</p>
+        </div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="masterToggle">
+        <span class="slider round"></span>
+      </label>
+    </header>
+
+    <!-- Quick Presets -->
+    <div class="section-title">Chế độ nhanh</div>
+    <div class="preset-buttons">
+      <button type="button" class="preset-btn" data-opacity="5" data-blur="0">🫥 Cực mờ (5%)</button>
+      <button type="button" class="preset-btn" data-opacity="15" data-blur="0">👻 Siêu mờ (15%)</button>
+      <button type="button" class="preset-btn active" data-opacity="35" data-blur="0">💼 Văn phòng (35%)</button>
+      <button type="button" class="preset-btn" data-opacity="60" data-blur="0">🕶️ Vừa phải (60%)</button>
+      <button type="button" class="preset-btn" data-opacity="25" data-blur="12">🌫️ Sương mù (Mờ 12px)</button>
+      <button type="button" class="preset-btn" data-opacity="100" data-blur="0">💡 Mặc định (100%)</button>
+    </div>
+
+    <!-- Sliders Section -->
+    <div class="controls-card">
+      <div class="control-row">
+        <div class="control-label">
+          <span>👁️ Độ rõ nét (Opacity: 1% - 100%)</span>
+          <span class="value-badge" id="opacityVal">35%</span>
+        </div>
+        <input type="range" id="opacitySlider" min="1" max="100" value="35" step="1" class="range-slider">
+      </div>
+
+      <div class="control-row">
+        <div class="control-label">
+          <span>☀️ Độ sáng (Brightness)</span>
+          <span class="value-badge" id="brightnessVal">85%</span>
+        </div>
+        <input type="range" id="brightnessSlider" min="5" max="100" value="85" step="1" class="range-slider">
+      </div>
+
+      <div class="control-row">
+        <div class="control-label">
+          <span>🎚️ Độ tương phản (Contrast)</span>
+          <span class="value-badge" id="contrastVal">80%</span>
+        </div>
+        <input type="range" id="contrastSlider" min="5" max="100" value="80" step="1" class="range-slider">
+      </div>
+
+      <div class="control-row">
+        <div class="control-label">
+          <span>🌫️ Làm mờ viền nét (Blur: 0px - 30px)</span>
+          <span class="value-badge" id="blurVal">0px</span>
+        </div>
+        <input type="range" id="blurSlider" min="0" max="30" value="0" step="0.5" class="range-slider">
+        <div class="quick-chips">
+          <button type="button" class="chip-btn" data-blur="0">0px</button>
+          <button type="button" class="chip-btn" data-blur="4">4px</button>
+          <button type="button" class="chip-btn" data-blur="10">10px</button>
+          <button type="button" class="chip-btn" data-blur="18">18px</button>
+          <button type="button" class="chip-btn" data-blur="30">30px (Cực mờ)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature Toggles -->
+    <div class="section-title">Tính năng bảo mật & ngụy trang</div>
+    <div class="toggle-list">
+      <label class="toggle-item">
+        <div class="toggle-info">
+          <span class="toggle-name">🖼️ Mờ ảnh & Video (Hover để xem)</span>
+          <span class="toggle-desc">Ẩn ảnh/video sặc sỡ, chống người khác liếc nhìn</span>
+        </div>
+        <input type="checkbox" id="blurMediaToggle">
+        <span class="toggle-check"></span>
+      </label>
+
+      <label class="toggle-item">
+        <div class="toggle-info">
+          <span class="toggle-name">🎨 Chế độ Đơn sắc (Grayscale)</span>
+          <span class="toggle-desc">Biến toàn bộ trang thành trắng đen nhạt</span>
+        </div>
+        <input type="checkbox" id="grayscaleToggle">
+        <span class="toggle-check"></span>
+      </label>
+
+      <label class="toggle-item">
+        <div class="toggle-info">
+          <span class="toggle-name">🎯 Vùng sáng theo chuột (Spotlight)</span>
+          <span class="toggle-desc">Chỉ sáng vùng quanh chuột, phần còn lại mờ tịt</span>
+        </div>
+        <input type="checkbox" id="spotlightToggle">
+        <span class="toggle-check"></span>
+      </label>
+
+      <label class="toggle-item">
+        <div class="toggle-info">
+          <span class="toggle-name">⏳ Tự mờ khi rời tay (Idle Fade)</span>
+          <span class="toggle-desc">Mờ gần như vô hình sau 5 giây không dùng chuột</span>
+        </div>
+        <input type="checkbox" id="idleFadeToggle">
+        <span class="toggle-check"></span>
+      </label>
+
+      <label class="toggle-item">
+        <div class="toggle-info">
+          <span class="toggle-name">🔤 Chữ siêu mỏng (Stealth Font)</span>
+          <span class="toggle-desc">Giảm độ đậm phông chữ, chữ thanh mảnh khó nhìn từ xa</span>
+        </div>
+        <input type="checkbox" id="stealthFontToggle">
+        <span class="toggle-check"></span>
+      </label>
+    </div>
+
+    <!-- Boss Key Section -->
+    <div class="section-title">Phím tắt Khẩn cấp (Boss Key)</div>
+    <div class="boss-key-card">
+      <div class="boss-row">
+        <label for="panicTypeSelect" class="boss-select-label">Mẫu màn hình ngụy trang:</label>
+        <select id="panicTypeSelect" class="boss-select">
+          <option value="fake_docs">📝 Báo cáo công ty (Word / Docs)</option>
+          <option value="fake_excel">📊 Bảng tính số liệu (Excel)</option>
+          <option value="fake_code">💻 Trình soạn thảo (VS Code)</option>
+          <option value="blank_white">⬜ Màn hình Trắng sạch</option>
+          <option value="blank_black">⬛ Màn hình Đen tắt</option>
+        </select>
+      </div>
+      <button type="button" id="testPanicBtn" class="boss-btn">🚨 Bật Boss Key Ngay (Alt + Z)</button>
+    </div>
+
+    <!-- Keyboard Shortcuts Help -->
+    <div class="shortcuts-box">
+      <div class="shortcut-title">⌨️ Phím tắt nhanh trên bàn phím:</div>
+      <div class="shortcut-grid">
+        <div class="shortcut-item"><kbd>Alt</kbd> + <kbd>X</kbd> <span>Bật/Tắt tàng hình</span></div>
+        <div class="shortcut-item"><kbd>Alt</kbd> + <kbd>Z</kbd> <span>Boss Key khẩn cấp</span></div>
+        <div class="shortcut-item"><kbd>Alt</kbd> + <kbd>↑</kbd> <span>Tăng độ rõ (+5%)</span></div>
+        <div class="shortcut-item"><kbd>Alt</kbd> + <kbd>↓</kbd> <span>Tăng độ mờ (-5%)</span></div>
+        <div class="shortcut-item"><kbd>Alt</kbd> + <kbd>B</kbd> <span>Bật/Tắt mờ nhòe (Blur)</span></div>
+        <div class="shortcut-item"><kbd>Alt</kbd> + <kbd>[</kbd>/<kbd>]</kbd> <span>Giảm/Tăng độ Blur</span></div>
+        <div class="shortcut-item"><kbd>Alt</kbd> + <kbd>M</kbd> <span>Bật/Tắt mờ ảnh/video</span></div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <button type="button" id="resetBtn" class="reset-link">Khôi phục mặc định</button>
+      <span class="version">v1.0.0</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
