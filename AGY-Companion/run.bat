@@ -3,8 +3,12 @@ chcp 65001 >nul
 title AGY Companion Launcher
 
 cd /d "%~dp0"
-set "PYTHON_EXE=%~dp0.venv\Scripts\python.exe"
-if not exist "%PYTHON_EXE%" set "PYTHON_EXE=python"
+call "%~dp0setup_env.bat"
+if not defined PYTHON_EXE (
+    echo [Lỗi] Không thể thiết lập môi trường Python!
+    pause
+    exit /b 1
+)
 
 echo ========================================================
 echo      AGY DEV ENGLISH COMPANION & TERMINAL BRIDGE

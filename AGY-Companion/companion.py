@@ -783,6 +783,14 @@ def launch_split_terminal():
     bridge_dir = os.path.dirname(os.path.abspath(__file__))
     workspace_dir = bridge_dir
     python_exe = os.path.join(bridge_dir, ".venv", "Scripts", "python.exe")
+    if not os.path.exists(python_exe):
+        for candidate in [
+            os.path.join(bridge_dir, "..", ".venv", "Scripts", "python.exe"),
+            os.path.join(bridge_dir, "..", "..", ".venv", "Scripts", "python.exe"),
+        ]:
+            if os.path.exists(candidate):
+                python_exe = os.path.abspath(candidate)
+                break
     companion_script = os.path.join(bridge_dir, "companion.py")
     standalone_exe = os.path.join(bridge_dir, "AGYCompanion.exe")
     dist_exe = os.path.join(bridge_dir, "dist", "AGYCompanion.exe")
@@ -791,10 +799,8 @@ def launch_split_terminal():
         companion_cmd = f'& "{sys.executable}" --tui'
     elif os.path.exists(python_exe) and os.path.exists(companion_script):
         companion_cmd = f'& "{python_exe}" "{companion_script}" --tui'
-    elif os.path.exists(standalone_exe):
-        companion_cmd = f'& "{standalone_exe}" --tui'
-    elif os.path.exists(dist_exe):
-        companion_cmd = f'& "{dist_exe}" --tui'
+    elif os.path.exists(companion_script):
+        companion_cmd = f'& "{sys.executable}" "{companion_script}" --tui'
     else:
         companion_cmd = f'& python "{companion_script}" --tui'
 

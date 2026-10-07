@@ -50,14 +50,14 @@
 3. Trình cài đặt tự động tạo shortcut Desktop & Taskbar.
 4. **Không cần cài Python** — runtime đã được nhúng sẵn.
 
-### Cách 2: Chạy từ Source
+### Cách 2: Chạy từ Source (Tự động 100% trên máy mới)
 ```powershell
 git clone https://github.com/liemvu12/AI-app.git
-cd AI-app
-python -m venv .venv
-.venv\Scripts\pip install -r requirements.txt
-agy_terminal_bridge\launch_split.bat
+cd AI-app\AGY-Companion
+.\run.bat
 ```
+> 💡 **Tự động thiết lập:** Hệ thống sẽ tự động khởi tạo `.venv` và cài đặt đầy đủ các gói cần thiết trong `requirements.txt` ngay lần chạy đầu tiên. Bạn chỉ cần click `run.bat` hoặc `launch_split.bat` là dùng được ngay!
+
 
 ---
 

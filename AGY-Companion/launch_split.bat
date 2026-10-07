@@ -5,16 +5,15 @@ title AGY Workspace Launcher (Split Terminal)
 set "BRIDGE_DIR=%~dp0"
 if "%BRIDGE_DIR:~-1%"=="\" set "BRIDGE_DIR=%BRIDGE_DIR:~0,-1%"
 set "WORKSPACE_DIR=%BRIDGE_DIR%"
-set "PYTHON_EXE=%BRIDGE_DIR%\.venv\Scripts\python.exe"
-set "STANDALONE_EXE=%BRIDGE_DIR%\AGYCompanion.exe"
 
-if exist "%PYTHON_EXE%" (
-    set "COMPANION_CMD=& \"%PYTHON_EXE%\" \"%BRIDGE_DIR%\companion.py\" --tui"
-) else if exist "%STANDALONE_EXE%" (
-    set "COMPANION_CMD=& \"%STANDALONE_EXE%\" --tui"
-) else (
-    set "COMPANION_CMD=& python \"%BRIDGE_DIR%\companion.py\" --tui"
+call "%BRIDGE_DIR%\setup_env.bat"
+if not defined PYTHON_EXE (
+    echo [Loi] Khong the thiet lap moi truong Python!
+    pause
+    exit /b 1
 )
+
+set "COMPANION_CMD=& \"%PYTHON_EXE%\" \"%BRIDGE_DIR%\companion.py\" --tui"
 
 echo Dang khoi chay Windows Terminal voi 2 man hinh song song:
 echo [Khung trai 67%%]: Terminal AGY nguyen ban (Full 100%% tinh nang, slash commands, interactive)
