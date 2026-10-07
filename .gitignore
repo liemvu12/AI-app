@@ -35,11 +35,17 @@ $RECYCLE.BIN/
 *.bak
 _MEI*/
 
-# Local config / secrets
+# Local config / secrets & session tokens
 .env
 *.key
 *.pem
 *.p12
+session_state.json
+
+# Browser profiles & automation cache
+*_profile/
+user_profile/
+edge_clean_profile/
 
 # Node.js / Web apps
 node_modules/
