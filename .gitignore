@@ -1,4 +1,4 @@
-# AGY Companion — .gitignore
+# AI-app Monorepo — .gitignore
 
 # Python
 __pycache__/
@@ -11,13 +11,12 @@ env/
 dist/
 build/
 *.spec
+**/dist/
+**/build/
 
-# PyInstaller build output (large binary — distributed via Releases)
-agy_terminal_bridge/dist/
-agy_terminal_bridge/build/
-
-# Bundle zip (distributed via Releases)
+# Bundle zip / release artifacts
 bundle.zip
+*.zip
 
 # IDE
 .vscode/
@@ -42,5 +41,7 @@ _MEI*/
 *.pem
 *.p12
 
-# Node.js (other subprojects)
+# Node.js / Web apps
 node_modules/
+.next/
+out/
