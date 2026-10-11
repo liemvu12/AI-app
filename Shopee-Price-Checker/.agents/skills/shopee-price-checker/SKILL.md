@@ -1,7 +1,7 @@
 ---
 name: shopee-price-checker
 description: >-
-  Tra cứu giá thực tế sản phẩm trên sàn Shopee, tự động bóc tách phân loại (bản tray, box, dung lượng, màu sắc), loại bỏ giá mồi của phụ kiện kèm theo, kiểm tra tồn kho thật (stock > 0), lọc shop uy tín (Shopee Mall / Yêu thích / đánh giá cao), quét nhanh cảnh báo nghiêm trọng trong review 1-2 sao và tính giá trung vị thị trường. BẮT BUỘC: Lượt bán phải lớn hơn 100 (sold > 100), đơn giản hóa phân tích bình luận; Khi tra cứu thiết bị đơn lẻ phải hỏi rõ mức giá mong muốn; khi build hệ thống phải hỏi đồ đã có, lên danh sách cần mua và chờ người dùng xác nhận trước khi tra đơn giá.
+  Tra cứu giá thực tế sản phẩm trên sàn Shopee, tự động bóc tách phân loại (bản tray, box, dung lượng, màu sắc), loại bỏ giá mồi của phụ kiện kèm theo, kiểm tra tồn kho thật (stock > 0), lọc shop uy tín đa tầng (Shopee Mall / Yêu thích sold >= 5, Shop thường sold >= 15 & rating cao, hoặc hàng mới sold > 50), quét nhanh cảnh báo nghiêm trọng trong review 1-2 sao và tính giá trung vị thị trường. BẮT BUỘC: Nếu phiên đăng nhập Shopee chưa có hoặc hết hạn, AI phải dừng lại và yêu cầu người dùng chạy file 'login_shopee.bat' để đăng nhập trước khi làm bất kỳ điều gì (không tự ý chạy lệnh python auth.py); Khi tra cứu thiết bị đơn lẻ phải hỏi rõ mức giá mong muốn; khi build hệ thống phải hỏi đồ đã có, lên danh sách cần mua và chờ người dùng xác nhận trước khi tra đơn giá.
 ---
 
 # Shopee Price Checker Skill
@@ -10,11 +10,23 @@ Skill này trang bị cho AI khả năng tra cứu giá sản phẩm trên sàn 
 
 ---
 
-## ⚡ 1. CÁC QUY TẮC LỌC NHANH & CHẤT LƯỢNG (FAST & TRUSTED RULES)
+## 🔐 0. QUY TẮC BẮT BUỘC VỀ PHIÊN ĐĂNG NHẬP (MANDATORY AUTHENTICATION PROTOCOL)
 
-1. **Số lượng lượt mua bắt buộc lớn hơn 100 (`sold > 100`):**
-   - Chỉ đối soát các sản phẩm đã có trên 100 lượt bán thành công.
-   - Bỏ qua các shop mới tạo, shop không có lượt mua hoặc lượt mua lẹt đẹt (< 100) để tối ưu thời gian tìm kiếm và đảm bảo uy tín thị trường.
+**TRƯỚC KHI LÀM BẤT KỲ ĐIỀU GÌ (kể cả khảo sát hay tra cứu):**
+1. AI phải kiểm tra tính hợp lệ của phiên đăng nhập (`python -c "from auth import is_session_valid; print(is_session_valid())"`).
+2. **NẾU PHIÊN ĐĂNG NHẬP CHƯA CÓ HOẶC ĐÃ HẾT HẠN (`is_session_valid() == False`):**
+   - **AI KHÔNG TỰ Ý CHẠY LỆNH `python auth.py`**.
+   - **AI BẮT BUỘC PHẢI DỪNG LẠI VÀ YÊU CẦU NGƯỜI DÙNG CHẠY FILE `login_shopee.bat`** (nhấp đúp vào file để mở trình duyệt hiển thị mã QR và quét mã đăng nhập bằng điện thoại).
+   - **TUYỆT ĐỐI KHÔNG làm bất kỳ điều gì khác** (không tự ý tra cứu giá, không kết luận số liệu giỏ hàng) trước khi người dùng chạy `login_shopee.bat` và phiên đăng nhập được xác nhận thành công!
+
+---
+
+## ⚡ 1. CÁC QUY TẮC LỌC ĐA TẦNG & CHẤT LƯỢNG (TIERED TRUST RULES)
+
+1. **Đánh giá độ tin cậy đa tầng (Tiered Trust Evaluation - Không cứng nhắc `sold > 100`):**
+   - **Tầng 1 (Shopee Mall / Shop Yêu Thích / Yêu Thích+):** Đã được Shopee định danh & kiểm duyệt. Chỉ cần có phát sinh đơn bán thực tế (`sold >= 5`), điểm đánh giá shop uy tín (`rating >= 4.5`), review không dính cờ rủi ro.
+   - **Tầng 2 (Shop thường điểm tín nhiệm cao):** Đánh giá sản phẩm/shop cao (`rating >= 4.7`), lượt bán thực tế từ 15 chiếc trở lên (`sold >= 15`), không có khiếu nại lừa đảo trong review 1-2 sao.
+   - **Tầng 3 (Hàng mới phổ thông 100%):** Ưu tiên các sản phẩm có lượt mua cao (`sold >= 50` hoặc `sold > 100`).
 2. **Đơn giản hóa phân tích bình luận (Lightweight Review Analysis):**
    - Chỉ quét nhanh các từ khóa rủi ro nghiêm trọng trong đánh giá 1-2 sao: `"lừa đảo"`, `"hàng giả"`, `"fake"`, `"trâu cày"`, `"rỉ sét"`, `"cháy"`, `"không lên"`, `"chối bỏ"`.
    - Nếu có từ 2 đánh giá tiêu cực chứa từ khóa trên -> gắn cờ cảnh báo `HIGH_RISK` và loại bỏ.
@@ -40,8 +52,10 @@ AI phải thực hiện nghiêm ngặt quy trình 3 bước trước khi lên đ
 3. **Bước 3 - Yêu cầu người dùng xác nhận:**
    - Đặt câu hỏi xác nhận:
      > *"Bạn vui lòng xem lại danh sách các món cần mua trên đã đúng ý chưa hoặc có cần thêm/bớt món nào không? Hãy xác nhận để mình tiến hành đối soát giá thực tế và tìm shop rẻ/uy tín nhất trên Shopee nhé!"*
-4. **Bước 4 - Triển khai tra cứu đơn giá:**
+4. **Bước 4 - Triển khai tra cứu đơn giá qua Cổng kiểm định bắt buộc (Mandatory Verification Gate):**
    - **CHỈ KHI người dùng xác nhận đồng ý**, AI mới sử dụng script `check_price.py` để tìm kiếm sản phẩm, kiểm tra tồn kho thật, mô phỏng giỏ hàng tính phí ship/voucher và lập bảng báo giá hoàn chỉnh.
+   - **QUY TẮC CỐT LÕI:** Mọi sản phẩm đưa vào bảng báo giá cuối cùng gửi cho người dùng **BẮT BUỘC 100% PHẢI NẰM TRONG MẢNG `trusted_deals` DO TOOL XUẤT RA**.
+   - **TUYỆT ĐỐI NGHIÊM CẤM:** Không được phép lấy link từ search engine hoặc ước lượng giá ngoài đời rồi tự ý ghép vào bảng báo giá mà chưa qua đối soát thực tế của tool! Nếu sản phẩm bị `check_price.py` loại ra (`other_deals_flagged` hoặc `status: not_found`), AI phải báo thẳng cho người dùng là link đó không đạt chuẩn (hết hàng/giá ảo/sold < 100), không được phép che giấu hoặc đưa link rác cho người dùng.
 
 ---
 

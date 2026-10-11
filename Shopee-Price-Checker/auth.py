@@ -35,13 +35,24 @@ def _real_login_cookie(cookies) -> bool:
 
 
 def is_session_valid(session_path: Path = SESSION_FILE) -> bool:
-    """Kiểm tra file session có tồn tại và chứa cookie đăng nhập thật không."""
+    """Kiểm tra file session có tồn tại, chứa cookie đăng nhập thật và còn hạn sử dụng."""
     if not session_path.exists():
         return False
     try:
         with open(session_path, "r", encoding="utf-8") as f:
             data = json.load(f)
-        return _real_login_cookie(data.get("cookies", []))
+        cookies = data.get("cookies", [])
+        if not _real_login_cookie(cookies):
+            return False
+
+        # Kiểm tra hạn của các cookie phiên đăng nhập cốt lõi
+        current_ts = time.time()
+        for c in cookies:
+            if c.get("name") in ("SPC_SI", "SPC_SEC_SI"):
+                exp = c.get("expires", -1)
+                if exp > 0 and exp < current_ts:
+                    return False
+        return True
     except Exception as e:
         print(f"[!] Lỗi khi đọc session: {e}")
         return False

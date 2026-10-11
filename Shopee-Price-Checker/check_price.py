@@ -35,11 +35,39 @@ def format_currency(amount: int) -> str:
     return f"{amount:,}đ".replace(",", ".")
 
 
+def is_shop_trusted_candidate(item: Dict[str, Any], min_rating: float = 4.6, min_sold: int = 100) -> bool:
+    """
+    Quy chuẩn đánh giá uy tín đa tầng (Tiered Trust System):
+    - Tầng 1: Shopee Mall hoặc Shop Yêu Thích / Yêu Thích+:
+      Đã được Shopee xác thực và kiểm duyệt. Chỉ cần có bán ra (sold >= 5), rating >= 4.5.
+    - Tầng 2: Shop thường nhưng rating cao (>= 4.7) và đã bán từ 15 chiếc trở lên (sold >= 15).
+    - Tầng 3: Shop thường thông thường: yêu cầu sold >= min_sold và rating >= min_rating.
+    """
+    badge = item.get("shop_badge", "THƯỜNG")
+    sold = item.get("sold", 0)
+    rating = item.get("rating_star", 0.0)
+
+    # Tầng 1: Shopee Mall hoặc Shop Yêu Thích
+    if badge in ("MALL", "YÊU THÍCH"):
+        if rating > 0 and rating < 4.5:
+            return False
+        return sold >= 5
+
+    # Tầng 2: Shop thường uy tín cao
+    if rating >= 4.7 and sold >= 15:
+        return True
+
+    # Tầng 3: Lọc theo ngưỡng min_sold chung
+    if rating > 0 and rating < min_rating:
+        return False
+    return sold >= min_sold
+
+
 def run_check_price(
     keyword: str,
     target_variant: str = None,
     min_rating: float = 4.6,
-    min_sold: int = 100,  # Quy tắc bắt buộc: số lượng lượt mua phải lớn hơn 100
+    min_sold: int = 100,
     limit: int = 15,
     strict_shop: bool = False,
     output_format: str = "table",
@@ -66,10 +94,8 @@ def run_check_price(
         if strict_shop and item["shop_badge"] == "THƯỜNG":
             continue
             
-        # Lọc theo đánh giá và lượt mua (Quy tắc bắt buộc: sold > 100)
-        if item["rating_star"] > 0 and item["rating_star"] < min_rating:
-            continue
-        if item.get("sold", 0) <= min_sold:
+        # Lọc theo hệ thống đánh giá uy tín đa tầng (Tiered Trust Evaluation)
+        if not is_shop_trusted_candidate(item, min_rating=min_rating, min_sold=min_sold):
             continue
             
         # Lấy cây biến thể (models) đã bóc tách từ PDP
