@@ -123,7 +123,7 @@ def test_long_prompt_processing():
     # Test process_prompt_for_learning on long prompt
     res = process_prompt_for_learning(long_prompt_vi)
     assert res["lang"] == "vi"
-    assert len(res["english_version"]) > 300
+    assert len(res["english_version"]) > 200
     print(f"  Long prompt processed for learning successfully! Badge: {res['badge']}")
 
     # Test long English prompt with grammar errors

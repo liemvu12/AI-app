@@ -21,10 +21,13 @@ from textual.timer import Timer
 from services.language_helper import process_prompt_for_learning
 from services.translator import translate_text
 from services.clipboard import copy_to_clipboard
-from services.transcript_watcher import AGYTranscriptWatcher
-from services.terminal_reader import TerminalScreenReader
 from services.window_switcher import WindowSwitcher
-from services.ollama_client import is_ollama_running
+from services.ollama_client import (
+    is_ollama_running,
+    is_model_available,
+    is_model_loaded,
+    get_ai_status
+)
 from ui.widgets.ollama_installer import OllamaInstallerModal
 
 
@@ -304,16 +307,6 @@ class AGYCompanionApp(App):
             on_trigger_ai_check=lambda: self.call_from_thread(self.action_trigger_ai_check)
         )
 
-        # 1. Bộ đọc trực tiếp Console Screen Buffer (Loại bỏ 100% xung đột Unikey)
-        self.screen_reader = TerminalScreenReader(
-            on_text_change=self.handle_terminal_text_change,
-            on_submit=self.handle_terminal_enter_submit,
-            on_idle=self.handle_terminal_idle
-        )
-
-        # 2. Bộ theo dõi transcript (Safety net khi paste hoặc qua history)
-        self.transcript_watcher = AGYTranscriptWatcher(on_new_prompt=self.handle_agy_transcript_prompt)
-
     def compose(self) -> ComposeResult:
         with Vertical(id="english-panel"):
             with Horizontal(id="header-bar"):
@@ -327,8 +320,8 @@ class AGYCompanionApp(App):
             )
             with VerticalScroll(id="realtime-scroll-view"):
                 yield Static(
-                    "[dim]• Trạng thái:[/dim] [bold green]Đang kết nối trực tiếp Terminal AGY...[/bold green]\n"
-                    "[dim]Nhấn Enter (tại ô nháp) hoặc Ctrl+Space (tại terminal) để kích hoạt AI.[/dim]",
+                    "[dim]• Trạng thái:[/dim] [bold green]Sẵn sàng nhận prompt tại ô nháp bên trên...[/bold green]\n"
+                    "[dim]Nhập prompt tiếng Việt hoặc tiếng Anh rồi nhấn Enter để AI dịch và tối ưu ngữ pháp.[/dim]",
                     id="english-preview"
                 )
             with Horizontal(id="buttons-row"):
@@ -349,21 +342,80 @@ class AGYCompanionApp(App):
             id="status-bar"
         )
 
+    def _update_ai_header(self) -> None:
+        """Cập nhật real-time trạng thái Ollama và Model tại vị trí tiêu đề DEV ENGLISH"""
+        try:
+            title_widget = self.query_one("#english-title", Static)
+        except Exception:
+            return
+
+        ollama_running = getattr(self, "_ollama_running", False)
+        model_avail = getattr(self, "_model_avail", False)
+        model_loaded = getattr(self, "_model_loaded", False)
+        is_processing = getattr(self, "_is_ai_processing", False)
+
+        if not ollama_running:
+            ollama_badge = "[bold red]🔴 Ollama: Tắt[/bold red]"
+            model_badge = "[dim]⚪ Model: Tắt[/dim]"
+        else:
+            ollama_badge = "[bold green]🟢 Ollama: Chạy[/bold green]"
+            if not model_avail:
+                model_badge = "[bold yellow]⚠️ Model: Chưa tải[/bold yellow]"
+            elif is_processing:
+                model_badge = "[bold yellow]⚡ Model: Đang xử lý...[/bold yellow]"
+            elif model_loaded:
+                model_badge = "[bold green]🟢 Model: Đang chạy[/bold green]"
+            else:
+                model_badge = "[bold cyan]🟢 Model: Sẵn sàng[/bold cyan]"
+
+        title_widget.update(f"─ DEV ENGLISH \\[{ollama_badge} [dim]|[/dim] {model_badge}] ─")
+
+    def _start_ai_status_monitor(self) -> None:
+        """Khởi động luồng kiểm tra định kỳ trạng thái Ollama và Model không chặn UI"""
+        self._ai_monitor_active = True
+        import threading
+        import time
+
+        def _monitor_loop():
+            while getattr(self, "_ai_monitor_active", True):
+                try:
+                    status = get_ai_status()
+                    self._ollama_running = status["ollama_running"]
+                    self._model_avail = status["model_available"]
+                    self._model_loaded = status["model_loaded"]
+                    self.call_from_thread(self._update_ai_header)
+                except Exception:
+                    pass
+                time.sleep(2.0)
+
+        threading.Thread(target=_monitor_loop, daemon=True).start()
+
     def on_mount(self) -> None:
-        self.screen_reader.start()
-        self.transcript_watcher.start()
         self.window_switcher.start_global_hotkeys()
         self.focus_draft_input()
         
-        if not is_ollama_running():
-            self.push_screen(OllamaInstallerModal())
-        else:
-            self.query_one("#english-title").update("─ DEV ENGLISH [🟢 AI Pro Max] ─")
+        # Khởi tạo trạng thái ban đầu của Ollama và Model
+        self._is_ai_processing = False
+        initial_status = get_ai_status()
+        self._ollama_running = initial_status["ollama_running"]
+        self._model_avail = initial_status["model_available"]
+        self._model_loaded = initial_status["model_loaded"]
+        self._update_ai_header()
+        self._start_ai_status_monitor()
+
+        if not self._ollama_running or not self._model_avail:
+            def on_modal_closed(result):
+                st = get_ai_status()
+                self._ollama_running = st["ollama_running"]
+                self._model_avail = st["model_available"]
+                self._model_loaded = st["model_loaded"]
+                self._update_ai_header()
+                self._render_terminal_idle()
+            self.push_screen(OllamaInstallerModal(), on_modal_closed)
 
     def on_unmount(self) -> None:
+        self._ai_monitor_active = False
         self.window_switcher.stop_global_hotkeys()
-        self.screen_reader.stop()
-        self.transcript_watcher.stop()
 
     def on_app_focus(self, event=None) -> None:
         """Tự động nhảy con trỏ thẳng vào ô nhập dữ liệu khi cửa sổ nhận focus"""
@@ -377,10 +429,14 @@ class AGYCompanionApp(App):
             pass
             
     def action_trigger_ai_check(self) -> None:
-        """Kích hoạt kiểm tra ngữ pháp từ terminal (Ctrl+Space)"""
-        text = self._last_original_prompt.strip()
+        """Kích hoạt kiểm tra ngữ pháp (Ctrl+Space)"""
+        try:
+            draft = self.query_one("#draft-input", Input)
+            text = draft.value.strip() or self._last_original_prompt.strip()
+        except Exception:
+            text = self._last_original_prompt.strip()
+
         if text:
-            # Chuyển cửa sổ sang companion để người dùng xem kết quả
             self.window_switcher.switch_to_companion()
             preview = self.query_one("#english-preview", Static)
             preview.update(
@@ -415,10 +471,17 @@ class AGYCompanionApp(App):
 
     def _render_terminal_idle(self) -> None:
         preview = self.query_one("#english-preview", Static)
-        status = "[🟢 AI Pro Max]" if is_ollama_running() else "[🔴 Dự phòng]"
+        ollama_ok = getattr(self, "_ollama_running", False)
+        model_ok = getattr(self, "_model_avail", False)
+        if ollama_ok and model_ok:
+            status = "\\[🟢 Ollama & Model: Đang chạy]"
+        elif ollama_ok:
+            status = "\\[⚠️ Model chưa tải]"
+        else:
+            status = "\\[🔴 Dự phòng MyMemory]"
         preview.update(
-            f"[dim]• Trạng thái:[/dim] [bold green]Đang kết nối Terminal AGY {status}...[/bold green]\n"
-            "[dim]Nhấn Enter (ở ô nháp) hoặc Ctrl+Space (ở Terminal) để kích hoạt AI.[/dim]"
+            f"[dim]• Trạng thái:[/dim] [bold green]Sẵn sàng {status}...[/bold green]\n"
+            "[dim]Nhập prompt tiếng Việt hoặc tiếng Anh vào ô nháp bên trên rồi nhấn Enter để AI xử lý.[/dim]"
         )
 
     def _render_terminal_typing(self, text: str) -> None:
@@ -444,11 +507,7 @@ class AGYCompanionApp(App):
         self._safe_call(_submit)
 
     def handle_agy_transcript_prompt(self, prompt: str) -> None:
-        def _transcript():
-            self._last_original_prompt = prompt
-            res = process_prompt_for_learning(prompt)
-            self._render_terminal_result(res, True)
-        self._safe_call(_transcript)
+        pass
 
     def _render_terminal_result(self, res: dict, is_submitted: bool = False) -> None:
         original = res.get("original", "")
@@ -570,7 +629,14 @@ class AGYCompanionApp(App):
     async def _async_process_prompt(self, text: str) -> None:
         import asyncio
         loop = asyncio.get_event_loop()
-        res = await loop.run_in_executor(None, process_prompt_for_learning, text)
+        self._is_ai_processing = True
+        self._update_ai_header()
+        try:
+            res = await loop.run_in_executor(None, process_prompt_for_learning, text)
+        finally:
+            self._is_ai_processing = False
+            self._model_loaded = True
+            self._update_ai_header()
         
         self._current_english_result = res.get("english_version", "").strip()
         grammar_fixed = res.get("grammar_fixed", "")
@@ -782,15 +848,28 @@ def launch_split_terminal():
 
     bridge_dir = os.path.dirname(os.path.abspath(__file__))
     workspace_dir = bridge_dir
+    def _is_working_python(p):
+        if not p or not os.path.exists(p):
+            return False
+        try:
+            import subprocess
+            r = subprocess.run([p, "-c", "import sys"], capture_output=True, timeout=2)
+            return r.returncode == 0
+        except Exception:
+            return False
+
     python_exe = os.path.join(bridge_dir, ".venv", "Scripts", "python.exe")
-    if not os.path.exists(python_exe):
+    if not _is_working_python(python_exe):
+        python_exe = None
         for candidate in [
             os.path.join(bridge_dir, "..", ".venv", "Scripts", "python.exe"),
             os.path.join(bridge_dir, "..", "..", ".venv", "Scripts", "python.exe"),
         ]:
-            if os.path.exists(candidate):
+            if _is_working_python(candidate):
                 python_exe = os.path.abspath(candidate)
                 break
+        if not python_exe:
+            python_exe = sys.executable
     companion_script = os.path.join(bridge_dir, "companion.py")
     standalone_exe = os.path.join(bridge_dir, "AGYCompanion.exe")
     dist_exe = os.path.join(bridge_dir, "dist", "AGYCompanion.exe")

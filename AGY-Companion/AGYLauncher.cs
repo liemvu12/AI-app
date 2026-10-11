@@ -152,13 +152,39 @@ namespace AGYLauncher
 
             foreach (var cand in candidates)
             {
-                if (File.Exists(cand))
+                if (File.Exists(cand) && IsPythonWorking(cand))
                 {
                     return Path.GetFullPath(cand);
                 }
             }
 
             return null;
+        }
+
+        static bool IsPythonWorking(string pythonPath)
+        {
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = pythonPath,
+                    Arguments = "-c \"import sys\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                using (var p = Process.Start(psi))
+                {
+                    if (p != null)
+                    {
+                        bool finished = p.WaitForExit(3000);
+                        return finished && p.ExitCode == 0;
+                    }
+                }
+            }
+            catch
+            {
+            }
+            return false;
         }
     }
 }

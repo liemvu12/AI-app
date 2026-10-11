@@ -5,6 +5,7 @@ import os
 import subprocess
 import tempfile
 import threading
+import time
 from typing import Callable, Optional
 
 OLLAMA_API_URL = "http://127.0.0.1:11434"
@@ -17,6 +18,50 @@ def is_ollama_running() -> bool:
             return resp.status == 200
     except Exception:
         return False
+
+def wait_for_ollama(timeout: float = 20.0) -> bool:
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        if is_ollama_running():
+            return True
+        time.sleep(1.0)
+    return False
+
+def is_model_available(model: str = DEFAULT_MODEL) -> bool:
+    try:
+        req = urllib.request.Request(f"{OLLAMA_API_URL}/api/tags")
+        with urllib.request.urlopen(req, timeout=2.0) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            models = [m.get("name", "") for m in data.get("models", [])]
+            return any(model in m for m in models)
+    except Exception:
+        return False
+
+def is_model_loaded(model: str = DEFAULT_MODEL) -> bool:
+    try:
+        req = urllib.request.Request(f"{OLLAMA_API_URL}/api/ps")
+        with urllib.request.urlopen(req, timeout=1.5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            models = [m.get("name", "") for m in data.get("models", [])]
+            return any(model in m for m in models)
+    except Exception:
+        return False
+
+def get_ai_status(model: str = DEFAULT_MODEL) -> dict:
+    running = is_ollama_running()
+    if not running:
+        return {
+            "ollama_running": False,
+            "model_available": False,
+            "model_loaded": False,
+        }
+    available = is_model_available(model)
+    loaded = is_model_loaded(model) if available else False
+    return {
+        "ollama_running": True,
+        "model_available": available,
+        "model_loaded": loaded,
+    }
 
 def generate_text(prompt: str, system_prompt: str, model: str = DEFAULT_MODEL) -> str:
     if not is_ollama_running():

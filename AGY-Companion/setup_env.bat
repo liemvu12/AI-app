@@ -1,36 +1,54 @@
 @echo off
-:: ===================================================================
-:: AGY Companion — Auto Environment Setup & Dependency Bootstrapper
-:: Tu dong kiem tra va khoi tao moi truong .venv tren may moi / sau khi clone
-:: ===================================================================
+rem ===================================================================
+rem AGY Companion - Auto Environment Setup and Dependency Bootstrapper
+rem Tu dong kiem tra va khoi tao moi truong .venv tren may moi / sau khi clone
+rem Tu dong phat hien va tu sua loi .venv hong (copy tu may khac / sai duong dan Python goc)
+rem ===================================================================
 
 set "SETUP_DIR=%~dp0"
 if "%SETUP_DIR:~-1%"=="\" set "SETUP_DIR=%SETUP_DIR:~0,-1%"
 
-:: 1. Kiem tra xem da co san .venv hop le chua (cuc bo hoac thu muc cha)
 set "PYTHON_EXE="
 
-if exist "%SETUP_DIR%\.venv\Scripts\python.exe" (
+:: 1. Kiem tra .venv cuc bo
+if not exist "%SETUP_DIR%\.venv\Scripts\python.exe" goto check_parent_1
+
+:: Kiem tra xem Python cuc bo co chay duoc khong
+"%SETUP_DIR%\.venv\Scripts\python.exe" -c "import sys" >nul 2>&1
+if not errorlevel 1 (
     set "PYTHON_EXE=%SETUP_DIR%\.venv\Scripts\python.exe"
     goto check_packages
 )
 
-if exist "%SETUP_DIR%\..\.venv\Scripts\python.exe" (
+echo ===================================================================
+echo  [Thong bao] Phat hien .venv bi loi hoac copy tu may khac!
+echo  (Khong tim thay Python goc trong file pyvenv.cfg)
+echo  Dang tu dong don dep va tao lai moi truong .venv cho may hien tai...
+echo ===================================================================
+rmdir /s /q "%SETUP_DIR%\.venv"
+goto create_venv
+
+:check_parent_1
+if not exist "%SETUP_DIR%\..\.venv\Scripts\python.exe" goto check_parent_2
+"%SETUP_DIR%\..\.venv\Scripts\python.exe" -c "import sys" >nul 2>&1
+if not errorlevel 1 (
     set "PYTHON_EXE=%SETUP_DIR%\..\.venv\Scripts\python.exe"
     goto check_packages
 )
 
-if exist "%SETUP_DIR%\..\..\.venv\Scripts\python.exe" (
+:check_parent_2
+if not exist "%SETUP_DIR%\..\..\.venv\Scripts\python.exe" goto create_venv
+"%SETUP_DIR%\..\..\.venv\Scripts\python.exe" -c "import sys" >nul 2>&1
+if not errorlevel 1 (
     set "PYTHON_EXE=%SETUP_DIR%\..\..\.venv\Scripts\python.exe"
     goto check_packages
 )
 
-:: 2. Neu chua co .venv o bat ky dau, tu dong tao moi tai %SETUP_DIR%\.venv
+:create_venv
 echo ===================================================================
 echo       AGY DEV ENGLISH COMPANION - TU DONG THIET LAP MAY MOI
 echo ===================================================================
-echo  [Thong bao] Phat hien lan chay dau tien hoac chua co moi truong .venv!
-echo  He thong dang tu dong khoi tao moi truong ao va cai dat thu vien...
+echo  [Thong bao] Dang khoi tao moi truong ao .venv va cai dat thu vien...
 echo ===================================================================
 echo.
 
@@ -77,11 +95,15 @@ echo.
 goto done
 
 :check_packages
-:: 3. Kiem tra nhanh xem cac package co ban da duoc cai dat chua
 "%PYTHON_EXE%" -c "import textual, rich, deep_translator, pynput, psutil" >nul 2>&1
 if errorlevel 1 (
     echo [AGY Companion] Phat hien thieu thu vien trong .venv, dang tu dong cai dat bo sung...
     "%PYTHON_EXE%" -m pip install -r "%SETUP_DIR%\requirements.txt"
+    if errorlevel 1 (
+        echo [Canh bao] Cai dat bo sung that bai. Dang tao lai .venv moi...
+        rmdir /s /q "%SETUP_DIR%\.venv"
+        goto create_venv
+    )
 )
 
 :done
